@@ -149,11 +149,12 @@ The function builds a simulation distribution \code{D.sim} of length
   recommendations, but users are encouraged to experiment to discover their
   fastest implementation for their individual cases.
 
-  For the normal, lognormal, uniform, loguniform, and exponential
+  For the normal, lognormal, uniform, loguniform, exponential, and Weibull
   distributions, the null distribution of \emph{D} does not depend on the
   population parameters but only on the sample size. (These are
   location-scale or scale families, possibly after taking logs, and their
-  parameter estimates are equivariant.) With \code{cache = TRUE},
+  parameter estimates are equivariant. For the Weibull distribution, this
+  holds up to the precision of the optimization routine.) With \code{cache = TRUE},
   \code{D.sim} is simulated once per combination of \code{cdf}, sample size,
   and \code{nreps}, and then reused for the rest of the session. This makes
   repeated tests (such as in power analyses) much faster. The argument is
