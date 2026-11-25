@@ -115,11 +115,12 @@
 #'   recommendations, but users are encouraged to experiment to discover their
 #'   fastest implementation for their individual cases.
 #'
-#'   For the normal, lognormal, uniform, loguniform, and exponential
+#'   For the normal, lognormal, uniform, loguniform, exponential, and Weibull
 #'   distributions, the null distribution of \emph{D} does not depend on the
 #'   population parameters but only on the sample size. (These are
 #'   location-scale or scale families, possibly after taking logs, and their
-#'   parameter estimates are equivariant.) With \code{cache = TRUE},
+#'   parameter estimates are equivariant. For the Weibull distribution, this
+#'   holds up to the precision of the optimization routine.) With \code{cache = TRUE},
 #'   \code{D.sim} is simulated once per combination of \code{cdf}, sample size,
 #'   and \code{nreps}, and then reused for the rest of the session. This makes
 #'   repeated tests (such as in power analyses) much faster. The argument is
@@ -322,7 +323,7 @@ LcKS <- function(x, cdf, nreps = 4999, G = 1:9, varModel = c("E", "V"), parallel
     warning("'parallel' is ignored when 'cache = TRUE'.")
     parallel <- FALSE
   }
-  if (!parallel & cdf %in% c("pgamma", "pweibull", "pmixnorm"))
+  if (!parallel & !cache & cdf %in% c("pgamma", "pweibull", "pmixnorm"))
     warning("Consider setting 'parallel = TRUE' to increase the speed of this function.")
   if (parallel & !cdf %in% c("pgamma", "pweibull", "pmixnorm"))
     warning("Consider setting 'parallel = FALSE' to increase the speed of this function.")
@@ -554,7 +555,9 @@ LcKS <- function(x, cdf, nreps = 4999, G = 1:9, varModel = c("E", "V"), parallel
     param[2] <- param[2] * scale.x	# Re-scale back
     D.obs <-
       ks_test_stat(x, "pweibull", shape = param[1], scale = param[2])
-    if (parallel) {
+    if (cache) {
+      D.sim <- cached_D_sim("pweibull", n, nreps)
+    } else if (parallel) {
       D.sim <- foreach::foreach(iterators::icount(nreps), .combine = c,
                                 .inorder = FALSE,
                                 .packages = c("KScorrect", "MASS")) %dopar% {
